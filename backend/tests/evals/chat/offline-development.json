@@ -1,0 +1,42 @@
+{
+  "split": "development",
+  "scenarios": [
+    {
+      "id": "spending",
+      "fixture": {
+        "period": "2026-09",
+        "scope": "All synthetic user accounts; transfers excluded from spending",
+        "metrics": {"income": 6000, "spending": 4200, "money_kept": 1800, "savings_rate": 30}
+      },
+      "turns": [
+        {"question": "What did I earn and spend last month?", "expected": {"income": 6000, "spending": 4200}, "required_tools": ["get_metrics"]},
+        {"question": "How much did I keep?", "expected": {"money_kept": 1800}},
+        {"question": "What percentage of income is that? Answer briefly.", "expected": {"savings_rate": 30}}
+      ],
+      "budgets": {"cost": {"target": 0.05, "upper": 0.2}, "latency": {"target": 15, "upper": 90}, "tools": {"target": 1, "upper": 5}}
+    },
+    {
+      "id": "cash-coverage",
+      "fixture": {
+        "scope": "Synthetic available cash; excludes investments",
+        "assumptions": "No income during coverage period; monthly expenses held constant",
+        "metrics": {"cash": 12000, "monthly_expenses": 3000}
+      },
+      "turns": [
+        {"question": "How long would my available cash last without income?", "expected": {"coverage_months": 4}, "required_tools": ["get_metrics"]},
+        {"question": "What if my monthly expenses rose by $1,000?", "expected": {"new_expenses": 4000, "coverage_months": 3}},
+        {"question": "Would you call that income coverage? Explain without repeating the numbers.", "expected": {}}
+      ]
+    },
+    {
+      "id": "memory-correction",
+      "fixture": {"metrics": {"cash": 9000, "monthly_expenses": 3000}},
+      "acquisition": ["I prefer detailed explanations.", "Correction: keep explanations brief from now on."],
+      "turns": [
+        {"question": "How much available cash do I have?", "expected": {"cash": 9000}, "required_tools": ["get_metrics"], "expected_memory": {"detail": "brief"}},
+        {"question": "How long does that cover my expenses without income?", "expected": {"coverage_months": 3}, "expected_memory": {"detail": "brief"}},
+        {"question": "What assumption should I keep in mind? No numbers needed.", "expected": {}, "expected_memory": {"detail": "brief"}}
+      ]
+    }
+  ]
+}

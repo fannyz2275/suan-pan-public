@@ -1,0 +1,125 @@
+{
+  "spec": "Spec A — Frontend Behavior Eval",
+  "run_date": "2026-05-10T19:51:02Z",
+  "playwright": "1.59.1",
+  "browser": "Chromium (MCP-driven manual session)",
+  "fixture_version": "EVAL_MOCKS=false (backend not in eval mode — /eval/health returns 404; tests run manually against live backend with real user session)",
+  "suan_pan_sha": "22f2154d6b8729d4779ab3883dd362051b20ecd5",
+  "eval_mocks": false,
+  "backend_url": "http://localhost:8000",
+  "frontend_url": "http://localhost:5173",
+  "scope": "UnifiedImportModal (Spec A §3.7 / §3.8) — targeted investigation in response to user bug report",
+  "phase": "manual",
+
+  "preflight": {
+    "backend_health": "200 OK (/health)",
+    "frontend_health": "200 OK",
+    "eval_health": "404 — backend NOT in eval mode (EVAL_MOCKS=1 not set)",
+    "seed_runner": "not run — eval mode unavailable; used live authenticated session",
+    "decision": "Manual Playwright MCP investigation only; no seeded fixture. Findings tagged phase=manual."
+  },
+
+  "summary": {
+    "surfaces_tested": ["UnifiedImportModal"],
+    "phase": "manual",
+    "total_findings": 2,
+    "failures": 1,
+    "warnings": 1,
+    "coverage_gaps": 0
+  },
+
+  "findings": [
+    {
+      "id": "F-001",
+      "surface": "UnifiedImportModal",
+      "test_name": "addFiles — silent rejection of unsupported file types",
+      "tag": "[DOM-MISSING]",
+      "phase": "manual",
+      "severity": "failure",
+      "reproducible": true,
+      "description": "When the user picks a file whose extension is NOT in SUPPORTED_EXT (['.pdf', '.csv', '.txt']) — e.g. a .docx, .xlsx, .png — the addFiles() function silently skips it (the continue statement on line 328 of UnifiedImportModal.tsx). The file is never added to row.files. The Preview button stays disabled showing 'Preview (0 rows)'. No error message, no visual feedback, no toast, no alert appears. The user sees nothing happen and believes the upload failed.",
+      "file_line": "frontend/src/components/UnifiedImportModal.tsx:328",
+      "code_snippet": "if (!SUPPORTED_EXT.some((e) => name.endsWith(e))) continue  // silent drop — no user feedback",
+      "expected": "When a file is rejected (wrong extension or oversized), the UI should display an inline error message in the row or beneath the dropzone (e.g. 'Only PDF, CSV, and TXT files are supported. The following files were skipped: statement.docx') and keep the dropzone interactive.",
+      "observed": "File is silently discarded. previewBtnDisabled=true, previewBtnText='Preview (0 rows)', no role=alert element in DOM, dropzone text unchanged, attachedFileCount=0.",
+      "reproduction_steps": [
+        "Open UnifiedImportModal via '+ Import accounts' header button",
+        "Select any account in the row 1 dropdown",
+        "Click the dashed dropzone to open the file picker",
+        "In the OS dialog, switch to 'All Files' and select any .docx or .xlsx or .png file",
+        "Observe: no file appears in the row, Preview button stays disabled, no error shown"
+      ],
+      "root_cause": "The addFiles() filter (UnifiedImportModal.tsx:319-334) iterates incoming files and silently continues past any file that fails extension or size checks. There is no branch to accumulate rejected filenames and surface them to the user.",
+      "also_affects": "The MAX_FILE_MB (10 MB) size check on line 329 has the same silent-rejection behavior.",
+      "note_on_input_element": "The hidden file input has accept='.pdf,.csv,.txt' which hints the OS picker to filter by type, but users can bypass this by selecting 'All Files' in the OS dialog. The in-code filter is therefore the correct enforcement layer — but it must tell the user what was rejected."
+    },
+    {
+      "id": "F-002",
+      "surface": "UnifiedImportModal",
+      "test_name": "Hidden input display:none — cross-browser file picker activation",
+      "tag": "[A11Y]",
+      "phase": "manual",
+      "severity": "warning",
+      "reproducible": "Chromium: not reproduced (works). Safari: likely to reproduce (not tested in this session).",
+      "description": "The file <input> uses the shadcn/ui Input component (which wraps @base-ui/react/input) with className='hidden'. The Tailwind 'hidden' class computes to display:none on the rendered <input> element (confirmed: getComputedStyle returned display='none', boundingRect={w:0,h:0}). The dropzone div's onClick calls fileRef.current?.click(). In Chromium, calling .click() on a display:none file input within a user-gesture callback works and opens the OS file picker. In Safari 16 and earlier, browser security restrictions may block programmatic .click() on a hidden file input even within a user-gesture handler. The correct pattern is to use a <label htmlFor=inputId> or position the input with opacity:0 / position:absolute / width:0 / height:0 rather than display:none.",
+      "file_line": "frontend/src/components/UnifiedImportModal.tsx:423-430",
+      "expected": "File input should be reachable in all major browsers. Pattern: position:absolute; opacity:0; width:1px; height:1px; overflow:hidden (or a <label> wrapping the input) instead of display:none.",
+      "observed": "Input has display:none (from Tailwind 'hidden' class). In Chromium (tested): click propagates correctly and file picker opens. In Safari: NOT tested in this session — flag as warning requiring Safari manual verification.",
+      "ref_check": "fileRef.current correctly points to the INPUT element (confirmed via React fiber inspection: hook index 5 has current='INPUT'). The ref attachment itself is working.",
+      "click_mechanism_check": "Confirmed: dispatchEvent(new MouseEvent('click')) on the dropzone div triggers the file input click and opens the file chooser dialog in Chromium."
+    }
+  ],
+
+  "happy_path_checks": {
+    "modal_opens_from_header_button": "PASS — clicking '+ Import accounts' opens [data-testid='unified-import-modal']",
+    "one_empty_row_on_open": "PASS — one [data-testid='unified-row'] present on open",
+    "account_dropdown_populated": "PASS — combobox shows all user accounts from /finance/accounts",
+    "new_account_option_present": "PASS — '+ New account…' option visible in dropdown",
+    "add_row_button_present": "PASS — [data-testid='unified-add-row'] visible",
+    "preview_btn_disabled_when_empty": "PASS — [data-testid='unified-preview-btn'] disabled when no account/file selected",
+    "preview_btn_enabled_after_file": "PASS — Preview button enables after file attached via programmatic setInputFiles",
+    "file_list_renders_after_attach": "PASS — attached file (statement.txt) appears in the row UI with name and size",
+    "dropzone_text_updates_after_file": "PASS — changes from 'Click to select statement(s)' to 'Click to add more files' after attach",
+    "cancel_button_present": "PASS — Cancel [data-testid not present, accessible as button text]",
+    "modal_header_correct": "PASS — 'Import accounts & statements' h2 visible",
+    "dropzone_click_opens_picker_chromium": "PASS — clicking dropzone <div> and <p> text both open OS file picker in Chromium"
+  },
+
+  "interaction_checks": {
+    "supported_txt_file_attaches": "PASS — .txt file accepted by addFiles filter, appears in row",
+    "unsupported_docx_file_silently_rejected": "FAIL [F-001] — .docx file silently dropped, no error shown",
+    "preview_btn_state_correct": "PASS (when valid files used) — enables at exactly 1 valid row",
+    "row_count_increases_on_add": "NOT TESTED — skipped due to env constraints"
+  },
+
+  "testids_present": {
+    "unified-import-modal": true,
+    "unified-row": true,
+    "unified-row-account": true,
+    "unified-row-files": true,
+    "unified-add-row": true,
+    "unified-preview-btn": true,
+    "unified-save-btn": "NOT VERIFIED — requires navigating to preview stage",
+    "preview-card": "NOT VERIFIED",
+    "unified-new-name": "NOT VERIFIED",
+    "unified-new-type": "NOT VERIFIED",
+    "unified-new-save": "NOT VERIFIED"
+  },
+
+  "env_notes": [
+    "Backend was NOT in eval mode (EVAL_MOCKS=1 not set). Tests ran against live backend with real authenticated user.",
+    "eval/health returns 404 — full Playwright suite cannot run without eval mode.",
+    "Manual MCP session used; findings tagged phase=manual.",
+    "Browser used: Chromium (via Playwright MCP). Safari not tested in this session.",
+    "The Playwright spec file frontend/e2e/unified-import-modal.spec.ts uses page.route() to mock /finance/accounts and /import/statements/* — those tests would bypass the real backend."
+  ],
+
+  "playwright_spec_assessment": {
+    "file": "frontend/e2e/unified-import-modal.spec.ts",
+    "exists": true,
+    "test_count": 14,
+    "coverage_of_f001": "NOT COVERED — no test for silent rejection of unsupported file types. The spec's attachFile() helper always uses 'statement.txt' (a supported extension). A test for F-001 is missing.",
+    "coverage_of_f002": "PARTIALLY COVERED — tests use setInputFiles() which bypasses the dropzone click entirely. The click path is not exercised by the spec.",
+    "anti_patterns_found": "None — no sleep/waitForTimeout calls observed. Route mocking follows spec §4.4 pattern. No SVG internal assertions."
+  }
+}

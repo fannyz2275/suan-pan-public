@@ -1,0 +1,12 @@
+[
+  {
+    "label": "equity",
+    "market_value": 10000.0,
+    "percent": 66.6667
+  },
+  {
+    "label": "fixed_income",
+    "market_value": 5000.0,
+    "percent": 33.3333
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "account_hint": "Fidelity ...1234",
+  "cash_value": 100.0,
+  "holdings": [
+    {
+      "cost_basis": 4000.0,
+      "market_value": 4750.0,
+      "name": "NVIDIA",
+      "price": 950.0,
+      "quantity": 5.0,
+      "ticker": "NVDA"
+    }
+  ],
+  "investment_transactions": [
+    {
+      "amount": -1840.0,
+      "date": "2026-04-15",
+      "price": 920.0,
+      "quantity": 2.0,
+      "ticker": "NVDA",
+      "type": "buy"
+    }
+  ],
+  "statement_date": "2026-04-30",
+  "total_value_reported": null
+}

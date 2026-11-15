@@ -1,0 +1,66 @@
+name: Post-deploy
+
+# Manual trigger only. Backfills and rebuilds touch user data, so we never
+# auto-run them on push — a regression should not be given an automatic shot
+# at production data. Operator picks the target after a deploy lands.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "What to run"
+        required: true
+        type: choice
+        default: "backfills"
+        options:
+          - backfills
+          - rebuild
+          - all
+      dry_run:
+        description: "Dry run (log only, no writes)"
+        type: boolean
+        default: false
+      user_id:
+        description: "(rebuild only) limit to a single user UUID"
+        required: false
+        type: string
+
+jobs:
+  post-deploy:
+    runs-on: ubuntu-latest
+    environment: DV
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      PLAID_CLIENT_ID: ${{ secrets.PLAID_CLIENT_ID }}
+      PLAID_SECRET: ${{ secrets.PLAID_SECRET }}
+      PLAID_ENV: ${{ secrets.PLAID_ENV }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run backfills
+        if: ${{ inputs.target == 'backfills' || inputs.target == 'all' }}
+        run: |
+          python -m scripts.backfills.run ${{ inputs.dry_run && '--dry-run' || '' }}
+
+      - name: Run rebuild
+        if: ${{ inputs.target == 'rebuild' || inputs.target == 'all' }}
+        run: |
+          python -m app.admin.rebuild \
+            ${{ inputs.dry_run && '--dry-run' || '' }} \
+            ${{ inputs.user_id && format('--user-id {0}', inputs.user_id) || '' }}

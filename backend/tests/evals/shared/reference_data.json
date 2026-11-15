@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "_comment": "Golden answer set for eval specs B and C. Keys under 'fixtures' are stable fixture ids; the naming convention is <scope>-<variant> (kebab-case). Spec B tests assert exact matches against 'expected'; Spec C dataset rows reference fixture ids in their 'setup' field. Only populate one example fixture here — specific tests will append their own entries.",
+  "fixtures": {
+    "single-account-2-holdings": {
+      "description": "User with one brokerage account holding NVDA + VOO, 2026-04-01 snapshot.",
+      "seed": {
+        "user_id": "u-test",
+        "accounts": [
+          {
+            "name": "Test Brokerage",
+            "type": "brokerage",
+            "balance": 14200.0
+          }
+        ],
+        "snapshots": [
+          {
+            "account_id": "acc-test-brokerage",
+            "snapshot_date": "2026-04-01",
+            "cash_value": 0.0,
+            "holdings": [
+              { "ticker": "NVDA", "quantity": 10, "price": 820.0, "market_value": 8200.0 },
+              { "ticker": "VOO",  "quantity": 10, "price": 600.0, "market_value": 6000.0 }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "snapshot.total_value": 14200.0,
+        "snapshot.cash_value": 0.0,
+        "snapshot.holdings.count": 2,
+        "snapshot.holdings.NVDA.market_value": 8200.0,
+        "snapshot.holdings.VOO.market_value": 6000.0,
+        "exposure.asset_class": [
+          { "label": "equity", "percent": 100.0 }
+        ]
+      }
+    }
+  }
+}

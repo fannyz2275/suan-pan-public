@@ -1,0 +1,49 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+# Local environment variants and backups, at any directory depth.
+.env.*
+*.env
+*.env.*
+!.env.example
+!.env.*.example
+!*.env.example
+*.egg-info/
+dist/
+.pytest_cache/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# Misc
+.DS_Store
+
+# Worktrees
+.worktrees/
+
+# Claude Code & MCP artifacts
+.claude/
+.mcp.json
+.playwright-mcp/
+.superpowers/
+
+# Local assistant skills and machine-specific agent configuration.
+# Shared project guidance belongs in AGENTS.md and docs/.
+.agents/
+.codex/
+
+# Local test screenshots (repo root)
+/*.png
+
+# Spec C eval reports (kept locally as trend dataset)
+backend/tests/evals/chat/reports/*.json
+backend/tests/evals/chat/reports/*.sqlite*
+backend/tests/evals/chat/reports/offline-*/
+
+# Private publication remediation archive; never publish.
+.private-publication/

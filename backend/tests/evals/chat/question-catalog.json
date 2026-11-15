@@ -1,0 +1,93 @@
+{
+  "status": "draft_reference_data_required_not_runnable",
+  "split": "development",
+  "period_policy": "User selected latest complete month versus preceding month. Verify statement coverage before assigning the evaluation period; activity dates alone are insufficient.",
+  "data_policy": "User authorized anonymized real-data context through OpenRouter. Exclude user names, account names/numbers, IDs, raw descriptions and other identifiers. Use local aliases for contributors/merchants. Keep financial fixtures and reports outside version control; no private records in this public catalog.",
+  "execution": {"rounds": 3, "maximum_updates": 2, "api_cap_usd_per_conversation": 1},
+  "conversations": [
+    {
+      "id": "income_refunds",
+      "questions": [
+        "Explain my income for the latest complete month in my records.",
+        "Why does it differ from the preceding month? Compare the same definition of income.",
+        "What are the top contributors to the change?",
+        "How many refunds did I receive, how much were they, and who were they from?"
+      ],
+      "reference_requirements": ["Monthly earned income and other income separately", "Current/prior contributor totals and signed deltas", "Refund count and sum by anonymized merchant", "Coverage and classification uncertainties"],
+      "hard_checks": ["Refunds and internal transfers are not earned income", "Rank change contributors by absolute delta with direction", "Do not describe all positive credits as salary"]
+    },
+    {
+      "id": "spending_patterns",
+      "questions": [
+        "Explain my spending for the latest complete month.",
+        "What are my largest spending categories and merchants?",
+        "How did they change from the preceding month?",
+        "What patterns does the available history suggest? Distinguish recent changes from things that persist, and avoid guessing about my lifestyle."
+      ],
+      "reference_requirements": ["Gross purchases, refunds, and net spending separately", "Merchant/category totals", "Equal-period monthly deltas", "Multi-month baseline and coverage"],
+      "hard_checks": ["Exclude own-account transfers and duplicate card payments", "No sensitive or unsupported lifestyle inference", "Do not call a one-month observation persistent"]
+    },
+    {
+      "id": "spending_alerts",
+      "questions": [
+        "Is there a spending surge in a category or at a particular merchant that I should notice?",
+        "How much did it increase, and what baseline are you comparing it with?",
+        "Is this a one-off purchase, repeated activity, or something you cannot determine?",
+        "What would you check before deciding this needs action?"
+      ],
+      "reference_requirements": ["Frozen alert thresholds", "Category/merchant history with counts, amounts and coverage", "Refund and transfer adjustments"],
+      "hard_checks": ["Report absolute change alongside percentage", "No percentage growth from a zero baseline", "Do not label unusual spending as fraud without evidence"]
+    },
+    {
+      "id": "wealth_attribution",
+      "questions": [
+        "How did my total wealth change over the comparison period?",
+        "How much can be explained by salary and spending, versus investment performance?",
+        "How much less or more did I spend than in the preceding period? Do not count that change twice.",
+        "Show what reconciles to the total wealth change and what remains unexplained."
+      ],
+      "reference_requirements": ["Aligned opening/closing assets and debts", "External income and expense flows", "Investment net contributions", "Dividends, interest, fees and valuation changes", "Unexplained reconciliation residual"],
+      "hard_checks": ["Own-account investment contributions do not increase consolidated wealth", "Spending reductions are a counterfactual comparison, not an extra inflow", "Do not infer gains from balance changes alone", "Disclose incomplete valuation coverage"]
+    },
+    {
+      "id": "peers_savings_contributions",
+      "questions": [
+        "How am I doing financially compared with people earning a similar salary? Do you actually have suitable comparison data?",
+        "What can you assess from my own records without inventing a peer ranking?",
+        "How much did I transfer into and out of my investment portfolio each month?",
+        "How much did I save each month, and how is that different from investment contributions?"
+      ],
+      "reference_requirements": ["Monthly income, net spending, money retained and savings rate", "Gross portfolio inflows/outflows and net contributions", "Explicit peer benchmark availability flag; default unavailable"],
+      "hard_checks": ["No invented peer percentile or benchmark", "Salary alone does not define comparable households", "Investment transfers are not additional savings", "Savings rate unavailable when denominator is zero"]
+    },
+    {
+      "id": "investment_style_returns",
+      "questions": [
+        "How would you describe my investment style based on my actual holdings and activity?",
+        "What evidence supports that description, and what can you not infer?",
+        "Did interest and dividends contribute more than price appreciation over this period?",
+        "Separate distributions, realized gains, unrealized gains, contributions and fees where the data supports it."
+      ],
+      "reference_requirements": ["Dated holdings and asset classification", "Investment activity", "Period income and fee totals", "Price-return evidence and cost-basis availability"],
+      "hard_checks": ["Do not infer personality or risk tolerance from holdings alone", "Reinvested dividends counted once", "Lifetime unrealized gains are not period gains", "No performance attribution without adequate basis and period data"]
+    },
+    {
+      "id": "account_transfers",
+      "questions": [
+        "How much money moved into and out of my accounts during the period?",
+        "Separate transfers between my own accounts from money entering or leaving my finances.",
+        "Which recurring transfer routes or timing patterns are visible?",
+        "Are there unmatched or unusual transfers I should review, and why?"
+      ],
+      "reference_requirements": ["Account ownership scope", "Confirmed transfer pairs and unresolved candidates", "Gross in/out by account", "Internal movement counted once per pair", "Cross-month pair timing"],
+      "hard_checks": ["Do not double-count the two legs of an internal transfer", "Unmatched does not automatically mean external", "Do not claim fraud from a timing or amount anomaly", "State the scope of every transfer total"]
+    }
+  ],
+  "required_harness_extensions": [
+    "Frozen independently checked references for each conversation; do not fabricate expected numeric values",
+    "Structured named-entity and behavioral checks beyond numeric claim extraction",
+    "Separate unsupported-inference, uncertainty, and benchmark-availability gates",
+    "Memory acquisition/probe cases before making memory-improvement claims",
+    "Fresh held-out conversations not used for optimization"
+  ]
+}

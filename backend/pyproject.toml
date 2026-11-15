@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+markers = [
+    "requires_supabase: test needs a live Supabase project configured via backend/.env.test",
+    "integration: alias for requires_supabase; test needs a live Supabase project",
+    "live_db: Spec B test that talks to a live Supabase test DB (skipped without SUPABASE_TEST_URL)",
+]

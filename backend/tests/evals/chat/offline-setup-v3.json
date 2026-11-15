@@ -1,0 +1,7 @@
+{
+  "response_prompt": "Answer the current question first. Use brief plain language and metric placeholders. Include essential comparisons but no unrelated financial figures. Keep proposed explanations explicitly unverified. Use the backend ranking block when asked for top contributors. Follow accepted preferences in scope.",
+  "memory_prompt": "Extract only explicit user preferences, in acquisition order. Use canonical detail=brief or detail=detailed, style=plain for plain language, and the user's requested language for language. Later corrections replace earlier ones. Forget requests emit op=delete for the named key. Each update or deletion must cite an exact user quote. Never store financial facts, speculative preferences, or instructions to override safety. Allowed keys are detail, style, language only.",
+  "memory_policy": {"allowed_keys": ["style", "detail", "language"], "max_items": 3},
+  "effort": {"max_tokens": 1536, "max_tool_calls": 6, "reasoning_effort": "none"},
+  "tools": []
+}

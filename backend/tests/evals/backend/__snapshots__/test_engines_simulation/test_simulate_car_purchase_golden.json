@@ -1,0 +1,29 @@
+{
+  "decision": "Buy a $35k car (financed at $500/mo)",
+  "goal_impacts": [
+    {
+      "goal_name": "Emergency Fund",
+      "months_to_goal_after": 5,
+      "months_to_goal_before": 4,
+      "score_after": 100.0,
+      "score_before": 100.0,
+      "score_delta": 0.0,
+      "status_after": "on_track",
+      "status_before": "on_track"
+    },
+    {
+      "goal_name": "Down Payment",
+      "months_to_goal_after": 30,
+      "months_to_goal_before": 27,
+      "score_after": 100.0,
+      "score_before": 100.0,
+      "score_delta": 0.0,
+      "status_after": "on_track",
+      "status_before": "on_track"
+    }
+  ],
+  "liquid_assets_after": -5000.0,
+  "liquid_assets_before": 30000.0,
+  "monthly_surplus_after": 4000.0,
+  "monthly_surplus_before": 4500.0
+}

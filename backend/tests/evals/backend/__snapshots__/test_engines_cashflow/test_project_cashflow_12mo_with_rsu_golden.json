@@ -1,0 +1,98 @@
+[
+  {
+    "balance": 53000.0,
+    "fixed_inflow": 0.0,
+    "fixed_outflow": 0.0,
+    "month": "2026-02",
+    "monthly_net": 3000.0,
+    "vesting_income": 0.0
+  },
+  {
+    "balance": 56000.0,
+    "fixed_inflow": 0.0,
+    "fixed_outflow": 0.0,
+    "month": "2026-03",
+    "monthly_net": 3000.0,
+    "vesting_income": 0.0
+  },
+  {
+    "balance": 71000.0,
+    "fixed_inflow": 0.0,
+    "fixed_outflow": 0.0,
+    "month": "2026-04",
+    "monthly_net": 3000.0,
+    "vesting_income": 12000.0
+  },
+  {
+    "balance": 74000.0,
+    "fixed_inflow": 0.0,
+    "fixed_outflow": 0.0,
+    "month": "2026-05",
+    "monthly_net": 3000.0,
+    "vesting_income": 0.0
+  },
+  {
+    "balance": 77000.0,
+    "fixed_inflow": 0.0,
+    "fixed_outflow": 0.0,
+    "month": "2026-06",
+    "monthly_net": 3000.0,
+    "vesting_income": 0.0
+  },
+  {
+    "balance": 80000.0,
+    "fixed_inflow": 0.0,
+    "fixed_outflow": 0.0,
+    "month": "2026-07",
+    "monthly_net": 3000.0,
+    "vesting_income": 0.0
+  },
+  {
+    "balance": 83000.0,
+    "fixed_inflow": 0.0,
+    "fixed_outflow": 0.0,
+    "month": "2026-08",
+    "monthly_net": 3000.0,
+    "vesting_income": 0.0
+  },
+  {
+    "balance": 86000.0,
+    "fixed_inflow": 0.0,
+    "fixed_outflow": 0.0,
+    "month": "2026-09",
+    "monthly_net": 3000.0,
+    "vesting_income": 0.0
+  },
+  {
+    "balance": 101000.0,
+    "fixed_inflow": 0.0,
+    "fixed_outflow": 0.0,
+    "month": "2026-10",
+    "monthly_net": 3000.0,
+    "vesting_income": 12000.0
+  },
+  {
+    "balance": 104000.0,
+    "fixed_inflow": 0.0,
+    "fixed_outflow": 0.0,
+    "month": "2026-11",
+    "monthly_net": 3000.0,
+    "vesting_income": 0.0
+  },
+  {
+    "balance": 107000.0,
+    "fixed_inflow": 0.0,
+    "fixed_outflow": 0.0,
+    "month": "2026-12",
+    "monthly_net": 3000.0,
+    "vesting_income": 0.0
+  },
+  {
+    "balance": 110000.0,
+    "fixed_inflow": 0.0,
+    "fixed_outflow": 0.0,
+    "month": "2027-01",
+    "monthly_net": 3000.0,
+    "vesting_income": 0.0
+  }
+]

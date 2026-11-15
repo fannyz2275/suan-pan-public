@@ -1,0 +1,1 @@
+Playwright smoke test for the profile-edit round-trip. Requires a seeded test account and both backend + frontend running. Run: `TEST_EMAIL=... TEST_PASSWORD=... PLAYWRIGHT_BASE=http://localhost:5173 npm run test:e2e`. Install browsers first: `npx playwright install chromium`.

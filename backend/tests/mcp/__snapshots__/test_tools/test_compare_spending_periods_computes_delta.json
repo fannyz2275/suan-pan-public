@@ -1,0 +1,21 @@
+{
+  "by_category": [
+    {
+      "category": "Food",
+      "delta": 50.0,
+      "pct_change": 50.0,
+      "period_a": 100.0,
+      "period_b": 150.0
+    },
+    {
+      "category": "Transport",
+      "delta": -20.0,
+      "pct_change": -10.0,
+      "period_a": 200.0,
+      "period_b": 180.0
+    }
+  ],
+  "delta": 30.0,
+  "total_a": 300.0,
+  "total_b": 330.0
+}

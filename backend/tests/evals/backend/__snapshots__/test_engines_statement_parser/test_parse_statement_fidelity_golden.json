@@ -1,0 +1,42 @@
+{
+  "account_hint": "Fidelity Brokerage ...1234",
+  "cash_value": 1234.56,
+  "holdings": [
+    {
+      "cost_basis": 7000.0,
+      "market_value": 9500.0,
+      "name": "NVIDIA",
+      "price": 950.0,
+      "quantity": 10.0,
+      "ticker": "NVDA"
+    },
+    {
+      "cost_basis": null,
+      "market_value": 9200.0,
+      "name": "Vanguard S&P 500",
+      "price": 460.0,
+      "quantity": 20.0,
+      "ticker": "VOO"
+    }
+  ],
+  "investment_transactions": [
+    {
+      "amount": -1840.0,
+      "date": "2026-04-15",
+      "price": 920.0,
+      "quantity": 2.0,
+      "ticker": "NVDA",
+      "type": "buy"
+    },
+    {
+      "amount": 18.5,
+      "date": "2026-04-25",
+      "price": null,
+      "quantity": null,
+      "ticker": "VOO",
+      "type": "dividend"
+    }
+  ],
+  "statement_date": "2026-04-30",
+  "total_value_reported": 19934.56
+}

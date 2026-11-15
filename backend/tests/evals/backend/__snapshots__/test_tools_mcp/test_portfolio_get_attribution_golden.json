@@ -1,0 +1,22 @@
+{
+  "contributions": 0.0,
+  "dividends": 25.0,
+  "end_value": 9000.0,
+  "from_date": "2026-04-01",
+  "macro_context": {
+    "cpi_yoy_at_end": null,
+    "spy_period_return_pct": null,
+    "ten_year_yield_change_bps": null
+  },
+  "market": 975.0,
+  "narrative_hints": [
+    "+$975 from market — your holdings moved +12.2% in the period.",
+    "+$25 from dividends/interest paid into cash."
+  ],
+  "start_value": 8000.0,
+  "to_date": "2026-05-01",
+  "trades": 0.0,
+  "trades_has_basis": true,
+  "unattributed": 0.0,
+  "withdrawals": 0.0
+}

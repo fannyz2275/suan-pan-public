@@ -1,0 +1,108 @@
+# Spec C rubric definitions. One top-level key per judge_prompt_id.
+# portfolio_attribution_v1 body is verbatim from spec §4.2.
+# general_transaction_v1 is a minimal stub for [LEGACY]-tagged scenarios.
+
+portfolio_attribution_v1:
+  description: |
+    Score an advisor reply that should narrate portfolio performance attribution
+    via portfolio_get_attribution. The advisor should use one short sentence per
+    non-trivial bucket, flag unattributed residuals above $100, cite concrete
+    dollar amounts from the tool result, and avoid collapsing the breakdown
+    into a single aggregate paragraph.
+  judge_model: gemini-2.5-pro
+  judge_temperature: 0
+  judge_system_prompt: |
+    You are evaluating the quality of a financial advisor's reply.
+
+    The advisor has access to a tool called portfolio_get_attribution that
+    decomposes portfolio change over a period into these buckets: market,
+    contributions, withdrawals, dividends, trades, and unattributed. The tool
+    also returns macro context fields (SPY return, 10-year yield change, CPI).
+
+    You will receive:
+    1. USER MESSAGE — the user's question.
+    2. ADVISOR REPLY — the advisor's full text response.
+    3. TOOL CALLS — JSON array of {name, args, result_data} for every tool called.
+    4. CRITERIA — the rubric criteria you must score.
+
+    Instructions:
+    - Score each criterion independently on a scale of 0.0 to 1.0.
+    - 1.0 = criterion is fully met; 0.0 = criterion is not met at all;
+      0.5 = partially met.
+    - Base scores only on observable evidence in the ADVISOR REPLY and TOOL CALLS.
+    - Do not infer intent. If the reply does not contain the evidence, score 0.
+    - Return a JSON object with exactly one key per criterion id. No other text.
+
+    Example output format:
+    {"one_sentence_per_bucket": 0.9, "flags_unattributed_when_over_100": 1.0,
+     "cites_concrete_number": 1.0, "no_aggregate_paragraph": 0.8}
+  criteria:
+    - id: one_sentence_per_bucket
+      description: |
+        Each non-trivial bucket (any bucket with absolute value > $50) gets its
+        own dedicated short sentence — not bundled into a single paragraph. A
+        trivial bucket ($0 or near-zero) may be omitted or briefly noted.
+    - id: flags_unattributed_when_over_100
+      description: |
+        If the tool result's unattributed bucket has an absolute value above
+        $100, the reply explicitly mentions it and suggests a reason (e.g.,
+        missing transaction, stale price). If unattributed is <= $100, this
+        criterion is not applicable and should be scored 1.0 automatically.
+    - id: cites_concrete_number
+      description: |
+        The reply quotes at least one specific dollar amount from the tool
+        result verbatim (or within rounding to the nearest dollar). Generic
+        statements like "your portfolio grew significantly" without citing a
+        dollar figure score 0.
+    - id: no_aggregate_paragraph
+      description: |
+        The reply does NOT collapse all attribution into a single long
+        paragraph. Specifically: the reply must not start with (or be dominated
+        by) a single sentence of the form "your portfolio gained/lost $X due
+        to market moves and contributions" without breaking out the individual
+        buckets.
+
+general_transaction_v1:
+  description: |
+    Stub rubric for [LEGACY]-tagged transaction-focused scenarios migrated
+    from the v1/v2 dataset. Scenarios under this rubric do not gate releases.
+  judge_model: gemini-2.5-pro
+  judge_temperature: 0
+  judge_system_prompt: |
+    You are evaluating a financial advisor's reply to a transaction-focused
+    user question.
+
+    You will receive:
+    1. USER MESSAGE — the user's question.
+    2. ADVISOR REPLY — the advisor's full text response.
+    3. TOOL CALLS — JSON array of {name, args, result_data}.
+    4. CRITERIA — the rubric criteria you must score.
+
+    Instructions:
+    - Score each criterion independently on a scale of 0.0 to 1.0.
+    - 1.0 = criterion is fully met; 0.0 = criterion is not met at all;
+      0.5 = partially met.
+    - For contains_expected_substring, the dataset row's required substrings
+      will appear in the criterion description verbatim — search the reply
+      case-insensitively for at least one match.
+    - Return a JSON object with exactly one key per criterion id. No other text.
+
+    Example output format:
+    {"contains_expected_substring": 1.0, "cites_concrete_number": 0.5,
+     "does_not_invent_data": 1.0}
+  criteria:
+    - id: contains_expected_substring
+      description: |
+        The reply contains at least one of the expected substrings (provided
+        per-scenario at runtime). Score 1.0 if any match (case-insensitive),
+        0.0 if none, 0.5 if a near-match (e.g., "Nov" instead of "November").
+    - id: cites_concrete_number
+      description: |
+        The reply quotes at least one specific dollar amount or numeric value
+        sourced from the tool result. Generic phrasing without numbers scores 0.
+    - id: does_not_invent_data
+      description: |
+        The reply does NOT invent merchants, amounts, dates, categories, or
+        any other facts that are not present in the tool results provided.
+        Score 0 if any fabricated specific is detected; 1.0 if all citations
+        trace back to the tool results.

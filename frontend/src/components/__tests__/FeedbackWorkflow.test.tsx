@@ -1,0 +1,35 @@
+import { it, expect, vi } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { FeedbackBar, type FeedbackLabels } from '../FeedbackBar'
+const empty = (): FeedbackLabels => ({ accurate_numbers: false, inaccurate_numbers: false, on_topic: false, off_topic: false, good_advice: false, bad_advice: false })
+it('records helpfulness without claiming numerical accuracy', async () => {
+  const save = vi.fn().mockResolvedValue(undefined)
+  render(<FeedbackBar labels={empty()} onChange={save} />)
+  expect(screen.queryByText('Accurate numbers')).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Helpful' }))
+  expect(await screen.findByText('Feedback saved')).toBeInTheDocument()
+  expect(save).toHaveBeenCalledWith(expect.objectContaining({ helpful: true, accurate_numbers: false, good_advice: false }))
+})
+it('offers optional negative reasons and allows clearing', async () => {
+  const save = vi.fn().mockResolvedValue(undefined)
+  const { rerender } = render(<FeedbackBar labels={empty()} onChange={save} />)
+  expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Not helpful' }))
+  await screen.findByText('Feedback saved')
+  rerender(<FeedbackBar labels={save.mock.calls[0][0]} onChange={save} />)
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Too technical or confusing' }))
+  await screen.findByText('Feedback saved')
+  expect(save).toHaveBeenLastCalledWith(expect.objectContaining({ not_helpful: true, too_technical: true }))
+  fireEvent.click(screen.getByRole('button', { name: 'Remove feedback' }))
+  expect(await screen.findByText('Feedback removed')).toBeInTheDocument()
+  expect(Object.values(save.mock.calls.at(-1)![0]).some(Boolean)).toBe(false)
+})
+it('shows failed saves and retries the same feedback', async () => {
+  const save = vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(undefined)
+  render(<FeedbackBar labels={empty()} onChange={save} />)
+  fireEvent.click(screen.getByRole('button', { name: 'Helpful' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('Could not save feedback')
+  fireEvent.click(screen.getByRole('button', { name: 'Retry feedback' }))
+  await screen.findByText('Feedback saved')
+  expect(save.mock.calls[1][0]).toEqual(save.mock.calls[0][0])
+})

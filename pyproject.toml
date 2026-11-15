@@ -1,0 +1,35 @@
+[project]
+name = "suan-pan"
+version = "0.1.0"
+description = "AI-powered personal finance advisor"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi==0.115.0",
+    "cryptography==46.0.5",
+    "uvicorn[standard]>=0.31.1",
+    "pydantic==2.13.4",
+    "pydantic-settings>=2.3.0",
+    "supabase>=2.10.0",
+    "google-genai==1.66.0",
+    "plaid-python==17.0.0",
+    "numpy==1.26.4",
+    "scipy==1.13.1",
+    "python-jose[cryptography]==3.3.0",
+    "httpx>=0.28.1,<1.0.0",
+    "python-dateutil==2.9.0",
+    "mcp==1.27.1",
+    "pdfplumber==0.11.4",
+    "python-multipart==0.0.9",
+    "yfinance==0.2.50",
+    "pyyaml==6.0.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest==8.2.0",
+    "pytest-asyncio==0.23.7",
+    "python-dotenv>=1.2.2",
+    "syrupy>=4.6",
+    "hypothesis>=6.100",
+]

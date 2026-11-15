@@ -1,0 +1,11 @@
+{
+  "fv": 86542.4,
+  "inputs": {
+    "annual_rate": 0.07,
+    "months": 120,
+    "pmt": 500
+  },
+  "months": 120,
+  "solve_for": "fv",
+  "years_months": "10yr 0mo"
+}

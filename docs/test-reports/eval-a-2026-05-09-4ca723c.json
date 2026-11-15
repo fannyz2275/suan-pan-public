@@ -1,0 +1,571 @@
+{
+  "spec": "Spec A — Frontend Behavior Eval",
+  "run_date": "2026-05-10T03:00:35Z",
+  "playwright_version": "1.59.1",
+  "browser": "Chromium (Desktop Chrome)",
+  "fixture_version": "FIXTURE_SINGLE_BROKERAGE — NOT APPLIED (seed_runner missing)",
+  "suan_pan_sha": "4ca723c2e2729b3cf994ca7c4fedec392f4b14bc",
+  "eval_mocks": "NOT ENABLED — /eval/health endpoint absent; backend not running in eval mode",
+  "backend_url": "http://localhost:8000",
+  "frontend_url": "http://localhost:5173",
+  "run_mode": "not-ready",
+  "method": "static-analysis + preflight-failure",
+
+  "preflight": {
+    "backend_eval_health": {
+      "status": "FAIL",
+      "detail": "GET http://localhost:8000/eval/health returned HTTP 404. The /eval/health endpoint does not exist in backend/app/main.py. Backend was not running in eval mode (EVAL_MOCKS=1 not set, server not started)."
+    },
+    "frontend_reachable": {
+      "status": "FAIL",
+      "detail": "curl to http://localhost:5173/ returned HTTP 000 (connection refused). Frontend dev server was not running."
+    },
+    "seed_py": {
+      "status": "PASS",
+      "detail": "backend/tests/evals/shared/seed.py exists."
+    },
+    "seed_runner_py": {
+      "status": "FAIL",
+      "detail": "backend/tests/evals/shared/seed_runner.py does not exist. The file was not found at the expected path. This is a Phase 1 blocker per Spec A §8."
+    },
+    "e2e_spec_files": {
+      "status": "FAIL",
+      "detail": "frontend/e2e/portfolio/ directory does not exist. Only frontend/e2e/smoke.spec.ts and frontend/e2e/recurring.spec.ts are present. None of the 9 spec files required by Spec A §2 have been authored."
+    }
+  },
+
+  "summary": {
+    "total_tests": 0,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "not_run": 34,
+    "blocker_count": 5,
+    "coverage_gap_count": 11,
+    "phase": "not-ready"
+  },
+
+  "blockers": [
+    {
+      "id": "BLK-1",
+      "title": "/eval/health endpoint missing from backend",
+      "severity": "hard-blocker",
+      "detail": "backend/app/main.py contains no /eval/health route. The Playwright globalSetup (Spec A §2 and §6.4) calls this endpoint before the first test. Without it, the harness cannot verify eval mocks are active and must refuse to run. The endpoint must be registered only when EVAL_MOCKS=1.",
+      "fix": "Add GET /eval/health to backend/app/main.py per Spec A §6.4. Return {eval_mocks, fred_mocked, gemini_mocked, plaid_mocked}.",
+      "file": "backend/app/main.py"
+    },
+    {
+      "id": "BLK-2",
+      "title": "seed_runner.py not implemented",
+      "severity": "hard-blocker",
+      "detail": "backend/tests/evals/shared/seed_runner.py does not exist. Without it, the fixture cannot be seeded, and all happy-path tests will encounter an empty DB.",
+      "fix": "Implement seed_runner.py as a CLI that accepts --fixture <name> and calls Seed().apply(db) with the named fixture. See Spec A §2 and §5 for the fixture definitions.",
+      "file": "backend/tests/evals/shared/seed_runner.py (missing)"
+    },
+    {
+      "id": "BLK-3",
+      "title": "All 9 Playwright spec files under frontend/e2e/portfolio/ are missing",
+      "severity": "hard-blocker",
+      "detail": "None of the following exist: frontend/e2e/portfolio/account-scope-chips.spec.ts, time-series-chart.spec.ts, allocation-stacked-bars.spec.ts, holdings-table.spec.ts, attribution-waterfall.spec.ts, attribution-chips.spec.ts, portfolio-import-modal.spec.ts, portfolio-page-buttons.spec.ts, and neither frontend/e2e/dashboard-tabs.spec.ts nor frontend/e2e/chat-table-pill.spec.ts. The entire Spec A test suite is unimplemented.",
+      "fix": "Author all 11 spec files per Spec A §2 and §3.",
+      "file": "frontend/e2e/ (multiple missing)"
+    },
+    {
+      "id": "BLK-4",
+      "title": "Backend not started; no EVAL_MOCKS server running",
+      "severity": "hard-blocker",
+      "detail": "curl to http://localhost:8000/eval/health returned 404 (server present but endpoint missing). Even if the endpoint were added, the backend was not started with EVAL_MOCKS=1 — meaning Gemini, Plaid, and FRED would be called for real during any live test run.",
+      "fix": "Start backend with: cd backend && EVAL_MOCKS=1 uvicorn app.main:app --port 8000"
+    },
+    {
+      "id": "BLK-5",
+      "title": "Frontend dev server not running",
+      "severity": "hard-blocker",
+      "detail": "http://localhost:5173 returned connection refused (HTTP 000). No Playwright session could be started.",
+      "fix": "Start frontend with: cd frontend && npm run dev"
+    }
+  ],
+
+  "coverage_gaps": [
+    {
+      "surface": "AccountScopeChips",
+      "component_file": "frontend/src/components/portfolio/AccountScopeChips.tsx",
+      "tag": "COVERAGE-GAP",
+      "missing_testids": [
+        "data-testid=\"scope-chip-all\" on the 'All investments' button",
+        "data-testid=\"scope-chip-{account_id}\" on per-account buttons",
+        "aria-pressed attribute on all chip buttons"
+      ],
+      "missing_tests": ["happy path", "empty state", "error state (GET /finance/accounts 500)", "chip click scopes requests"],
+      "spec_ref": "§3.1"
+    },
+    {
+      "surface": "PortfolioTimeSeriesChart",
+      "component_file": "frontend/src/components/portfolio/PortfolioTimeSeriesChart.tsx",
+      "tag": "COVERAGE-GAP",
+      "missing_testids": [
+        "data-testid=\"timeseries-chart\" on chart container",
+        "data-testid=\"overlay-{key}\" on each overlay chip button",
+        "data-testid=\"window-btn-{w}\" on each window button (lives in PortfolioPage.tsx)"
+      ],
+      "missing_tests": ["happy path", "empty state ({series:[]})", "error state (GET /portfolio/timeseries 500)", "1M window click", "10Y overlay param", "CPI overlay stacking"],
+      "spec_ref": "§3.2"
+    },
+    {
+      "surface": "AllocationStackedBars",
+      "component_file": "frontend/src/components/portfolio/AllocationStackedBars.tsx",
+      "tag": "COVERAGE-GAP",
+      "missing_testids": [
+        "data-testid=\"allocation-bars\" on outer container",
+        "data-testid=\"bar-asset_class\", \"bar-sector\", \"bar-region\" on each bar row"
+      ],
+      "missing_tests": ["happy path", "empty state (returns null)", "error state", "segment click opacity wiring (BLOCKED — see testability gap)"],
+      "testability_gap": "onSelect prop passed from PortfolioPage to AllocationStackedBars but HoldingsTable does not accept a filter prop — clicking a bar segment does not filter the table. Spec A §13 notes this as a known gap; interaction test must be skipped until wired.",
+      "spec_ref": "§3.3"
+    },
+    {
+      "surface": "HoldingsTable",
+      "component_file": "frontend/src/components/portfolio/HoldingsTable.tsx",
+      "tag": "COVERAGE-GAP",
+      "missing_testids": [
+        "data-testid=\"holdings-table\" on wrapper",
+        "data-testid=\"col-ticker\", \"col-quantity\", \"col-market-value\", \"col-percent\" on column headers",
+        "data-testid=\"holding-row-{ticker}\" on each row"
+      ],
+      "missing_tests": ["happy path", "empty state ('No holdings yet.')", "error state (GET /portfolio/holdings 500)", "sort by Ticker asc/desc", "sort by Market value", "account chip scopes request"],
+      "spec_ref": "§3.4"
+    },
+    {
+      "surface": "AttributionWaterfall",
+      "component_file": "frontend/src/components/portfolio/AttributionWaterfall.tsx",
+      "tag": "COVERAGE-GAP",
+      "missing_testids": [
+        "data-testid=\"attribution-waterfall\" on outer div",
+        "data-testid=\"attribution-heading\" on h3",
+        "data-testid=\"unattributed-banner\" on amber warning div"
+      ],
+      "missing_tests": ["happy path", "empty/error state (renders null on non-2xx)", "unattributed banner visible when |unattributed| >= 1", "banner absent when clean", "amber color class check (A11Y warning)"],
+      "spec_ref": "§3.5"
+    },
+    {
+      "surface": "AttributionChips",
+      "component_file": "frontend/src/components/portfolio/AttributionChips.tsx",
+      "tag": "COVERAGE-GAP",
+      "missing_testids": [
+        "data-testid=\"attribution-chips\" on outer div",
+        "data-testid=\"attribution-chips-period\" on period summary line"
+      ],
+      "missing_tests": ["happy path (tool result with non-trivial bucket values)", "absent state (no tool result)", "malformed JSON resilience"],
+      "spec_ref": "§3.6"
+    },
+    {
+      "surface": "PortfolioImportModal",
+      "component_file": "frontend/src/components/portfolio/PortfolioImportModal.tsx",
+      "tag": "COVERAGE-GAP",
+      "missing_testids": [
+        "data-testid=\"portfolio-import-modal\" on modal container",
+        "data-testid=\"import-step-input\" and \"import-step-preview\" on step panels",
+        "data-testid=\"import-textarea\" on textarea",
+        "data-testid=\"import-file-input\" on file input",
+        "data-testid=\"import-preview-btn\" on Preview button",
+        "data-testid=\"import-save-btn\" on Save snapshot button",
+        "data-testid=\"tie-out-banner\" on amber mismatch div",
+        "data-testid=\"tie-out-match\" on green match line",
+        "data-testid=\"holdings-preview-table\" on preview holdings table"
+      ],
+      "missing_tests": ["paste happy path (3-step flow)", "file upload happy path", "tie-out match state", "tie-out mismatch state", "parse error (422)", "save error (500)", "empty account list", "back button on preview step"],
+      "spec_ref": "§3.7"
+    },
+    {
+      "surface": "PortfolioPage buttons (Import + Sync)",
+      "component_file": "frontend/src/components/portfolio/PortfolioPage.tsx",
+      "tag": "COVERAGE-GAP",
+      "missing_testids": [
+        "data-testid=\"portfolio-page\" on root div",
+        "data-testid=\"btn-import-statement\" on Import statement button",
+        "data-testid=\"btn-sync-plaid\" on Sync Plaid button",
+        "data-testid=\"sync-status-msg\" on status span"
+      ],
+      "missing_tests": ["Import button opens modal", "Sync button fires POST /portfolio/sync/plaid", "Syncing... disabled state", "Sync success message", "Sync error message", "refreshKey bump triggers new chart fetch"],
+      "spec_ref": "§3.8, §3.9"
+    },
+    {
+      "surface": "Dashboard Portfolio tab",
+      "component_file": "frontend/src/pages/Dashboard.tsx",
+      "tag": "COVERAGE-GAP",
+      "missing_testids": [
+        "data-testid=\"tab-overview\"",
+        "data-testid=\"tab-accounts\"",
+        "data-testid=\"tab-portfolio\"",
+        "data-testid=\"tab-cashflow\"",
+        "data-testid=\"portfolio-page\" (or data-testid=\"btn-import-statement\") to confirm PortfolioPage mounts"
+      ],
+      "missing_tests": ["Portfolio tab click mounts PortfolioPage", "active tab has border-primary class", "GET /finance/accounts fires on Portfolio tab mount"],
+      "spec_ref": "§3.10"
+    },
+    {
+      "surface": "TablePill",
+      "component_file": "frontend/src/components/TablePill.tsx",
+      "tag": "COVERAGE-GAP",
+      "partial_testids": {
+        "aria-expanded": "PRESENT — aria-expanded={open} is set on toggle button (line 51)",
+        "data-testid-table-pill": "MISSING",
+        "data-testid-table-pill-toggle": "MISSING",
+        "data-testid-table-pill-body": "MISSING"
+      },
+      "missing_tests": ["happy path collapsed/expanded", "empty rows", "large table (> 100 rows) shows 'Open full view' button"],
+      "spec_ref": "§3.11"
+    },
+    {
+      "surface": "Backend eval harness",
+      "component_file": "backend/app/main.py",
+      "tag": "COVERAGE-GAP",
+      "missing_items": [
+        "/eval/health endpoint (Spec A §6.4)",
+        "EVAL_MOCKS=1 startup gate",
+        "seed_runner.py CLI module"
+      ],
+      "missing_tests": ["test_harness.py for seed_runner (Spec A §14)", "frontend/e2e/test_harness.spec.ts meta-tests"],
+      "spec_ref": "§6.4, §13, §14"
+    }
+  ],
+
+  "findings_by_surface": {
+    "AccountScopeChips": {
+      "happy_path": {"status": "NOT-RUN", "reason": "no spec file; no data-testid attributes present in component"},
+      "empty_state": {"status": "NOT-RUN"},
+      "error_state": {"status": "NOT-RUN"},
+      "interaction": {"status": "NOT-RUN"},
+      "dom_testid_audit": {
+        "scope-chip-all": "MISSING — Chip button has no data-testid; renders as plain <button> with class-based styling only",
+        "scope-chip-{account_id}": "MISSING — per-account chips have no data-testid",
+        "aria-pressed": "MISSING — active state is Tailwind class only (bg-gray-900 text-white); no aria-pressed attribute"
+      },
+      "failures": [
+        {
+          "tag": "DOM-MISSING",
+          "expected": "data-testid=\"scope-chip-all\" on 'All investments' button",
+          "observed": "No data-testid attribute; button identified only by class",
+          "file": "frontend/src/components/portfolio/AccountScopeChips.tsx"
+        }
+      ]
+    },
+    "PortfolioTimeSeriesChart": {
+      "happy_path": {"status": "NOT-RUN"},
+      "empty_state": {"status": "NOT-RUN"},
+      "error_state": {"status": "NOT-RUN"},
+      "interaction": {"status": "NOT-RUN"},
+      "dom_testid_audit": {
+        "timeseries-chart": "MISSING",
+        "window-btn-{w}": "MISSING — window buttons are in PortfolioPage.tsx with no data-testid",
+        "overlay-{key}": "MISSING"
+      },
+      "failures": [
+        {
+          "tag": "DOM-MISSING",
+          "expected": "data-testid=\"timeseries-chart\" on ResponsiveContainer wrapper",
+          "observed": "No data-testid on chart container",
+          "file": "frontend/src/components/portfolio/PortfolioTimeSeriesChart.tsx"
+        },
+        {
+          "tag": "DOM-MISSING",
+          "expected": "data-testid=\"window-btn-{w}\" on each window button in PortfolioPage",
+          "observed": "Window buttons rendered via Object.keys(WINDOWS).map() with no data-testid",
+          "file": "frontend/src/components/portfolio/PortfolioPage.tsx (line 60-70)"
+        }
+      ]
+    },
+    "AllocationStackedBars": {
+      "happy_path": {"status": "NOT-RUN"},
+      "empty_state": {"status": "NOT-RUN"},
+      "error_state": {"status": "NOT-RUN"},
+      "interaction": {
+        "status": "BLOCKED",
+        "reason": "HoldingsTable does not accept a filter prop; onSelect wiring from PortfolioPage to AllocationStackedBars does not propagate to HoldingsTable. Spec A §13 documents this as a known testability gap."
+      },
+      "dom_testid_audit": {
+        "allocation-bars": "MISSING",
+        "bar-asset_class": "MISSING",
+        "bar-sector": "MISSING",
+        "bar-region": "MISSING"
+      },
+      "failures": [
+        {
+          "tag": "DOM-MISSING",
+          "expected": "data-testid=\"allocation-bars\" on outer container",
+          "observed": "No data-testid attributes in AllocationStackedBars.tsx (74 lines, none contain data-testid)",
+          "file": "frontend/src/components/portfolio/AllocationStackedBars.tsx"
+        }
+      ]
+    },
+    "HoldingsTable": {
+      "happy_path": {"status": "NOT-RUN"},
+      "empty_state": {"status": "NOT-RUN"},
+      "error_state": {"status": "NOT-RUN"},
+      "interaction": {"status": "NOT-RUN"},
+      "dom_testid_audit": {
+        "holdings-table": "MISSING",
+        "col-ticker": "MISSING",
+        "col-quantity": "MISSING",
+        "col-market-value": "MISSING",
+        "col-percent": "MISSING",
+        "holding-row-{ticker}": "MISSING"
+      },
+      "failures": [
+        {
+          "tag": "DOM-MISSING",
+          "expected": "All data-testid attributes per Spec A §3.4",
+          "observed": "No data-testid in HoldingsTable.tsx (75 lines, none contain data-testid)",
+          "file": "frontend/src/components/portfolio/HoldingsTable.tsx"
+        }
+      ]
+    },
+    "AttributionWaterfall": {
+      "happy_path": {"status": "NOT-RUN"},
+      "empty_state": {"status": "NOT-RUN"},
+      "error_state": {"status": "NOT-RUN"},
+      "interaction": {"status": "NOT-RUN"},
+      "dom_testid_audit": {
+        "attribution-waterfall": "MISSING",
+        "attribution-heading": "MISSING",
+        "unattributed-banner": "MISSING"
+      },
+      "failures": [
+        {
+          "tag": "DOM-MISSING",
+          "expected": "All data-testid attributes per Spec A §3.5",
+          "observed": "No data-testid in AttributionWaterfall.tsx (80 lines)",
+          "file": "frontend/src/components/portfolio/AttributionWaterfall.tsx"
+        }
+      ]
+    },
+    "AttributionChips": {
+      "happy_path": {"status": "NOT-RUN"},
+      "absent_state": {"status": "NOT-RUN"},
+      "error_state": {"status": "NOT-RUN"},
+      "dom_testid_audit": {
+        "attribution-chips": "MISSING",
+        "attribution-chips-period": "MISSING"
+      },
+      "failures": [
+        {
+          "tag": "DOM-MISSING",
+          "expected": "data-testid=\"attribution-chips\" and \"attribution-chips-period\"",
+          "observed": "No data-testid in AttributionChips.tsx (43 lines)",
+          "file": "frontend/src/components/portfolio/AttributionChips.tsx"
+        }
+      ]
+    },
+    "PortfolioImportModal": {
+      "happy_path_paste": {"status": "NOT-RUN"},
+      "happy_path_file": {"status": "NOT-RUN"},
+      "tie_out_match": {"status": "NOT-RUN"},
+      "tie_out_mismatch": {"status": "NOT-RUN"},
+      "error_parse": {"status": "NOT-RUN"},
+      "error_save": {"status": "NOT-RUN"},
+      "empty_account_list": {"status": "NOT-RUN"},
+      "back_button": {"status": "NOT-RUN"},
+      "dom_testid_audit": {
+        "portfolio-import-modal": "MISSING",
+        "import-step-input": "MISSING",
+        "import-step-preview": "MISSING",
+        "import-textarea": "MISSING",
+        "import-file-input": "MISSING",
+        "import-preview-btn": "MISSING",
+        "import-save-btn": "MISSING",
+        "tie-out-banner": "MISSING",
+        "tie-out-match": "MISSING",
+        "holdings-preview-table": "MISSING"
+      },
+      "failures": [
+        {
+          "tag": "DOM-MISSING",
+          "expected": "All 10 data-testid attributes per Spec A §3.7",
+          "observed": "No data-testid in PortfolioImportModal.tsx (322 lines)",
+          "file": "frontend/src/components/portfolio/PortfolioImportModal.tsx"
+        }
+      ]
+    },
+    "PortfolioPageButtons": {
+      "import_btn_happy": {"status": "NOT-RUN"},
+      "sync_btn_happy": {"status": "NOT-RUN"},
+      "sync_btn_disabled": {"status": "NOT-RUN"},
+      "sync_success_msg": {"status": "NOT-RUN"},
+      "sync_error_msg": {"status": "NOT-RUN"},
+      "dom_testid_audit": {
+        "portfolio-page": "MISSING — root div has no data-testid",
+        "btn-import-statement": "MISSING — button rendered at line 51-56 in PortfolioPage.tsx, no data-testid",
+        "btn-sync-plaid": "MISSING — button rendered at line 44-50, no data-testid",
+        "sync-status-msg": "MISSING — span at line 41-43, no data-testid"
+      },
+      "failures": [
+        {
+          "tag": "DOM-MISSING",
+          "expected": "data-testid=\"btn-import-statement\" on Import statement button",
+          "observed": "Button present in PortfolioPage.tsx line 51-56 but has no data-testid",
+          "file": "frontend/src/components/portfolio/PortfolioPage.tsx (lines 44-56)"
+        },
+        {
+          "tag": "DOM-MISSING",
+          "expected": "data-testid=\"btn-sync-plaid\" and data-testid=\"sync-status-msg\"",
+          "observed": "Sync button and status span present but neither has a data-testid",
+          "file": "frontend/src/components/portfolio/PortfolioPage.tsx (lines 44-50, 41-43)"
+        }
+      ]
+    },
+    "DashboardPortfolioTab": {
+      "portfolio_tab_click": {"status": "NOT-RUN"},
+      "active_tab_styling": {"status": "NOT-RUN"},
+      "account_fetch_on_mount": {"status": "NOT-RUN"},
+      "dom_testid_audit": {
+        "tab-overview": "MISSING",
+        "tab-accounts": "MISSING",
+        "tab-portfolio": "MISSING",
+        "tab-cashflow": "MISSING"
+      },
+      "note": "Dashboard.tsx renders tabs via array map at line 127: ['overview','accounts','portfolio','cashflow'].map(tab => <button key={tab} ...>). No data-testid is set. The Portfolio tab does mount PortfolioPage when activeTab==='portfolio' (line 200), but cannot be selected via testid-based locator.",
+      "failures": [
+        {
+          "tag": "DOM-MISSING",
+          "expected": "data-testid=\"tab-portfolio\" (and the other 3 tab testids) per Spec A §3.10",
+          "observed": "Tab buttons have key={tab} prop (for React reconciliation) but no data-testid attribute in the DOM",
+          "file": "frontend/src/pages/Dashboard.tsx (lines 127-137)"
+        }
+      ]
+    },
+    "TablePill": {
+      "happy_path": {"status": "NOT-RUN"},
+      "empty_rows": {"status": "NOT-RUN"},
+      "large_table": {"status": "NOT-RUN"},
+      "dom_testid_audit": {
+        "table-pill": "MISSING",
+        "table-pill-toggle": "MISSING",
+        "table-pill-body": "MISSING",
+        "aria-expanded": "PRESENT — aria-expanded={open} is set on toggle button (TablePill.tsx line 51)"
+      },
+      "note": "aria-expanded is already implemented which is a partial win. The three data-testid selectors are all missing.",
+      "failures": [
+        {
+          "tag": "DOM-MISSING",
+          "expected": "data-testid=\"table-pill\", \"table-pill-toggle\", \"table-pill-body\"",
+          "observed": "None of the three testids present; aria-expanded is correctly set on toggle (partial credit)",
+          "file": "frontend/src/components/TablePill.tsx"
+        }
+      ]
+    }
+  },
+
+  "tag_frequency": {
+    "DOM-MISSING": 14,
+    "COVERAGE-GAP": 11,
+    "DOM-DRIFT": 0,
+    "NETWORK-SHAPE": 0,
+    "STATE-LEAK": 0,
+    "A11Y": 0,
+    "FLAKY": 0
+  },
+
+  "testability_gaps_confirmed": [
+    {
+      "gap_id": "TG-1",
+      "component": "AccountScopeChips.tsx",
+      "required_change": "Add data-testid=\"scope-chip-all\" to 'All investments' button; data-testid={`scope-chip-${a.id}`} to per-account buttons; aria-pressed={active} to Chip component"
+    },
+    {
+      "gap_id": "TG-2",
+      "component": "PortfolioTimeSeriesChart.tsx",
+      "required_change": "Add data-testid=\"timeseries-chart\" to outer div (ResponsiveContainer wrapper)"
+    },
+    {
+      "gap_id": "TG-3",
+      "component": "PortfolioPage.tsx",
+      "required_change": "Add data-testid=\"window-btn-{w}\" to each window button (lines 61-69); data-testid=\"overlay-{key}\" to each overlay chip (if rendered in PortfolioPage rather than PortfolioTimeSeriesChart)"
+    },
+    {
+      "gap_id": "TG-4",
+      "component": "AllocationStackedBars.tsx",
+      "required_change": "Add data-testid=\"allocation-bars\" to outer container; data-testid=\"bar-{dim}\" to each bar row div"
+    },
+    {
+      "gap_id": "TG-5",
+      "component": "HoldingsTable.tsx",
+      "required_change": "Add data-testid=\"holdings-table\" to wrapper; data-testid=\"col-{key}\" to each th; data-testid=\"holding-row-{ticker}\" to each tr"
+    },
+    {
+      "gap_id": "TG-6",
+      "component": "AttributionWaterfall.tsx",
+      "required_change": "Add data-testid=\"attribution-waterfall\" to outer div; data-testid=\"attribution-heading\" to h3; data-testid=\"unattributed-banner\" to amber warning div"
+    },
+    {
+      "gap_id": "TG-7",
+      "component": "AttributionChips.tsx",
+      "required_change": "Add data-testid=\"attribution-chips\" to outer div; data-testid=\"attribution-chips-period\" to period summary line"
+    },
+    {
+      "gap_id": "TG-8",
+      "component": "PortfolioImportModal.tsx",
+      "required_change": "Add 10 data-testid attributes: portfolio-import-modal, import-step-input, import-step-preview, import-textarea, import-file-input, import-preview-btn, import-save-btn, tie-out-banner, tie-out-match, holdings-preview-table"
+    },
+    {
+      "gap_id": "TG-9",
+      "component": "PortfolioPage.tsx",
+      "required_change": "Add data-testid=\"portfolio-page\" to root div; data-testid=\"btn-import-statement\" to Import button (line 51); data-testid=\"btn-sync-plaid\" to Sync button (line 44); data-testid=\"sync-status-msg\" to status span (line 42)"
+    },
+    {
+      "gap_id": "TG-10",
+      "component": "Dashboard.tsx",
+      "required_change": "Add data-testid={`tab-${tab}`} to each tab button in the array map (line 128)"
+    },
+    {
+      "gap_id": "TG-11",
+      "component": "TablePill.tsx",
+      "required_change": "Add data-testid=\"table-pill\" to outer container; data-testid=\"table-pill-toggle\" to toggle button; data-testid=\"table-pill-body\" to expanded content section (aria-expanded already correct)"
+    },
+    {
+      "gap_id": "TG-12",
+      "component": "backend/app/main.py",
+      "required_change": "Add GET /eval/health endpoint (EVAL_MOCKS=1 gated); add seed_runner.py CLI module per Spec A §2 and §6.4"
+    },
+    {
+      "gap_id": "TG-13",
+      "component": "AllocationStackedBars.tsx + HoldingsTable.tsx + PortfolioPage.tsx",
+      "required_change": "Wire onSelect callback from AllocationStackedBars through PortfolioPage to HoldingsTable via filterDim/filterLabel props and corresponding GET /portfolio/holdings?dim=sector&label=... query param. Until resolved, Spec A §3.3 interaction test must be test.skip'd."
+    }
+  ],
+
+  "partial_wins": [
+    {
+      "component": "TablePill.tsx",
+      "observation": "aria-expanded attribute is correctly implemented (line 51: aria-expanded={open}). Spec A requires this attribute — it is present. Only the three data-testid selectors need to be added."
+    },
+    {
+      "component": "PortfolioPage.tsx",
+      "observation": "All 8 portfolio components exist and are wired: AccountScopeChips, PortfolioTimeSeriesChart, AttributionWaterfall, AllocationStackedBars, HoldingsTable, PortfolioImportModal are all imported and rendered. The syncPlaidInvestments function and refreshKey pattern are implemented per spec."
+    },
+    {
+      "component": "Dashboard.tsx",
+      "observation": "Portfolio tab routing is implemented (line 200: activeTab === 'portfolio' && <PortfolioPage />) and PortfolioPage is imported. The tab bar uses 'portfolio' as the key."
+    },
+    {
+      "component": "backend/tests/evals/shared/seed.py",
+      "observation": "seed.py exists and has the Seed builder API referenced in Spec A §5. The FIXTURE_SINGLE_BROKERAGE fixture pattern is implementable once seed_runner.py is added."
+    }
+  ],
+
+  "recommended_fix_order": [
+    "1. Add data-testid attributes to Dashboard.tsx tabs (TG-10) — 1-line change, unblocks dashboard-tabs.spec.ts which is the Phase 1 required surface",
+    "2. Add /eval/health endpoint to backend/app/main.py (TG-12, BLK-1) — required for globalSetup to validate eval mode",
+    "3. Implement seed_runner.py (BLK-2) — required for all fixture-dependent tests",
+    "4. Add data-testid to PortfolioPage.tsx (TG-9, TG-3) — portfolio-page root, btn-import-statement, btn-sync-plaid, sync-status-msg, window-btn-{w}",
+    "5. Add data-testid to AccountScopeChips.tsx + aria-pressed (TG-1)",
+    "6. Add data-testid to HoldingsTable.tsx (TG-5)",
+    "7. Add data-testid to AttributionWaterfall.tsx (TG-6)",
+    "8. Add data-testid to AllocationStackedBars.tsx (TG-4)",
+    "9. Add data-testid to PortfolioImportModal.tsx (TG-8, 10 attributes)",
+    "10. Add data-testid to PortfolioTimeSeriesChart.tsx (TG-2) and overlay chips",
+    "11. Add data-testid to AttributionChips.tsx (TG-7)",
+    "12. Add data-testid to TablePill.tsx (TG-11, 3 attributes — aria-expanded already done)",
+    "13. Implement all 11 spec files under frontend/e2e/ (BLK-3)",
+    "14. Wire HoldingsTable filter prop to unblock AllocationStackedBars interaction test (TG-13)"
+  ]
+}
